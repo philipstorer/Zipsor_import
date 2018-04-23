@@ -1,0 +1,192 @@
+<section class="isi" id="isi">
+    <div class="scroll-to-me" id="js-isi-scroll">CLICK TO EXPAND</div>
+    <squarespace:block-field id="isiContent" columns="12" />
+</section>
+
+<style>
+    .isi {
+        position:relative;
+        background-color:#efefef;  
+        padding:4em 20px 20px 20px;
+    }
+
+    .isi .scroll-to-me {
+        display:none;
+    }
+
+    .scroll-to-me {
+        position:absolute;
+        top:10px;
+        z-index:5;
+        padding:0.5em 1.5em;
+        border:2px solid black;
+        cursor:pointer;
+        font-size:0.8em;
+        margin:0 auto;
+        left:50%;
+        transform: translateX(-50%);
+        background-color:black;
+        color:white;
+        border-radius:5px;
+        text-transform:uppercase;
+    }
+
+    .isi-fixed {
+        display:none;
+        z-index:-1;
+    }
+
+    .isi-open .isi-fixed {
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        //height:15vh;
+        max-height:15vh;
+        min-height:100px;
+        display:block;
+        z-index:3;
+        border-top:1px solid black;
+    }
+    .isi-open .isi-fixed .scroll-to-me {
+        display:block;
+    }
+
+    @media screen and (min-width:768px) {
+        .isi {
+          padding:4em 100px 20px 50px;
+        }
+        .scroll-to-me {
+          transform:none;
+          left: auto;
+          right: 50px;
+          top: 2em;
+          font-size:1em;
+        }
+    }
+
+    @media screen and (min-width:1024px) {
+        .isi {
+          padding:2em 200px 20px 50px;
+        }
+        .scroll-to-me {
+          right: 100px;
+        }
+    }
+</style>
+
+<script>
+var scrollObject = {};
+scrollObject = scrollObject;
+
+let stickPosition = 0;
+
+function getScrollPosition(){
+    scrollObject = {
+       x: window.pageXOffset,
+       y: window.pageYOffset
+    }
+    // If you want to check distance
+   
+}
+
+// first add raf shim
+// http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+window.requestAnimFrame = (function(){
+  return  window.requestAnimationFrame       ||
+          window.webkitRequestAnimationFrame ||
+          window.mozRequestAnimationFrame    ||
+          function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+          };
+})();
+
+// main function
+function scrollToY(scrollTargetY, speed, easing) {
+    // scrollTargetY: the target scrollY property of the window
+    // speed: time in pixels per second
+    // easing: easing equation to use
+
+    var scrollY = window.scrollY || document.documentElement.scrollTop,
+        scrollTargetY = scrollTargetY || 0,
+        speed = speed || 2000,
+        easing = easing || 'easeOutSine',
+        currentTime = 0;
+
+    // min time .1, max time .8 seconds
+    var time = Math.max(.1, Math.min(Math.abs(scrollY - scrollTargetY) / speed, .8));
+
+    // easing equations from https://github.com/danro/easing-js/blob/master/easing.js
+    var easingEquations = {
+            easeOutSine: function (pos) {
+                return Math.sin(pos * (Math.PI / 2));
+            },
+            easeInOutSine: function (pos) {
+                return (-0.5 * (Math.cos(Math.PI * pos) - 1));
+            },
+            easeInOutQuint: function (pos) {
+                if ((pos /= 0.5) < 1) {
+                    return 0.5 * Math.pow(pos, 5);
+                }
+                return 0.5 * (Math.pow((pos - 2), 5) + 2);
+            }
+        };
+
+    // add animation loop
+    function tick() {
+        currentTime += 1 / 60;
+
+        var p = currentTime / time;
+        var t = easingEquations[easing](p);
+
+        if (p < 1) {
+            requestAnimFrame(tick);
+
+            window.scrollTo(0, scrollY + ((scrollTargetY - scrollY) * t));
+        } else {
+            console.log('scroll done');
+            window.scrollTo(0, scrollTargetY);
+        }
+    }
+
+    tick();
+}
+
+var isiDom, isiClone, isiParent;
+
+window.onload = (event) => {
+  isiDom = document.getElementById("isi"); 
+  isiClone = isiDom.cloneNode(true);
+  isiClone.classList.add('isi-fixed');
+
+  isiParent = isiDom.parentNode;
+
+  isiParent.appendChild(isiClone);
+  
+  stickPosition = isiDom.getBoundingClientRect().top;
+  getScrollPosition();
+  document.body.classList.add('isi-open');
+
+
+    window.onscroll = (event) => {
+        getScrollPosition();
+
+        var domRect = isiDom.getBoundingClientRect();
+
+        if(domRect.top <= window.innerHeight) {
+            document.body.classList.remove('isi-open');
+        }
+        else {
+            document.body.classList.add('isi-open');
+        }
+    } 
+
+    [].forEach.call( document.querySelectorAll( '.scroll-to-me' ), function ( a ) {
+    a.addEventListener( 'click', function () {
+       scrollToY(stickPosition, 1000, 'easeInOutQuint');
+    }, false );
+});
+
+};
+
+</script>
