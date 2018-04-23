@@ -154,7 +154,7 @@
 
         </div>
       </div>
-
+      {@|apply important-safety-information.block}
       {@|apply footer.block}
 
     </div>
